@@ -1,4 +1,4 @@
-name: 🐧 CYNET Cloud Kali Linux
+name: 🛡️ CYNET Cloud Kali Linux
 
 on:
   workflow_dispatch:
@@ -12,27 +12,19 @@ jobs:
       - name: 📦 Setup Kali Linux Engine & Web Terminal (TTYD)
         run: |
           echo "=========================================================="
-          echo "  🐧 INSTALLING KALI LINUX & HACKING SUITE..."
+          echo "  🛡️ INSTALLING KALI LINUX & HACKING SUITE..."
           echo "=========================================================="
-          
-          # به‌روزرسانی سیستم
           sudo apt-get update -y -q
           
-          # نصب Docker
-          curl -fsSL https://get.docker.com -o get-docker.sh
-          sudo sh get-docker.sh
-          sudo usermod -aG docker $USER
-          newgrp docker
-
-          # نصب Cloudflared (برای تانل)
+          # نصب کلودفلرد
           wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O /usr/local/bin/cloudflared
           sudo chmod +x /usr/local/bin/cloudflared
 
-          # نصب وب‌ترمینال ttyd
+          # نصب وب‌ترمینال قدرتمند ttyd
           sudo wget -q https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.x86_64 -O /usr/local/bin/ttyd
           sudo chmod +x /usr/local/bin/ttyd
 
-          # اجرای کانتینر رسمی Kali Linux با دسترسی روت کامل
+          # اجرای کانتینر رسمی کالی لینوکس با دسترسی روت کامل
           docker run -d \
             --name cynet-kali \
             --privileged \
@@ -41,34 +33,9 @@ jobs:
             kalilinux/kali-rolling \
             tail -f /dev/null
 
-          # نصب ابزارهای اصلی Kali در پس‌زمینه
+          # نصب ابزارهای اصلی کالی در پس‌زمینه
           docker exec cynet-kali apt-get update -y
-          docker exec cynet-kali apt-get install -y -q \
-            nmap \
-            metasploit-framework \
-            sqlmap \
-            hydra \
-            curl \
-            wget \
-            python3 \
-            git \
-            sudo \
-            zsh \
-            tmux \
-            net-tools \
-            nikto \
-            gobuster \
-            john \
-            airgeddon \
-            wireshark \
-            tcpdump
-
-          # نصب ابزارهای اضافی با pip
-          docker exec cynet-kali pip3 install --upgrade pip
-          docker exec cynet-kali pip3 install requests beautifulsoup4 paramiko
-
-          # تنظیم ZSH به عنوان شل پیش‌فرض
-          docker exec cynet-kali chsh -s /bin/zsh root
+          docker exec cynet-kali apt-get install -y -q nmap metasploit-framework sqlmap hydra curl wget python3 git sudo zsh tmux
 
       - name: 🌐 Launch Interactive Web Terminal & Public Link
         run: |
@@ -76,18 +43,13 @@ jobs:
           echo "  🎉 LAUNCHING INTERACTIVE KALI WEB TERMINAL..."
           echo "=========================================================="
           
-          # اجرای وب‌ترمینال با فلگ -W برای فعال‌سازی کامل تایپ و کیبورد
-          ttyd -W -p 7681 \
-            -t fontSize=16 \
-            -t theme='{"background": "#0f172a", "foreground": "#38bdf8", "cursor": "#38bdf8"}' \
-            docker exec -it cynet-kali /bin/bash > /dev/null 2>&1 &
-          
+          # اجرای وب ترمینال با فلگ -W برای فعال‌سازی کامل تایپ و کیبورد
+          ttyd -W -p 7681 -t fontSize=16 -t theme='{"background": "#0f172a", "foreground": "#38bdf8", "cursor": "#38bdf8"}' docker exec -it cynet-kali /bin/bash > /dev/null 2>&1 &
           sleep 3
 
-          # ایجاد تانل Cloudflare
+          # ایجاد تانل کلودفلر
           cloudflared tunnel --url http://localhost:7681 > tunnel.log 2>&1 &
           
-          # دریافت و نمایش لینک عمومی
           sleep 5
           for i in {1..20}; do
             URL=$(grep -o 'https://[a-zA-Z0-9-]*\.trycloudflare\.com' tunnel.log | head -n 1)
@@ -98,7 +60,6 @@ jobs:
               echo "  👉 CLICK TO OPEN IN BROWSER: $URL"
               echo "  --------------------------------------------------------"
               echo "  ⚡ Full Root Access | 1000 Mbps Internet | Keyboard Active"
-              echo "  🛠️ Tools Installed: Nmap, Metasploit, Hydra, SQLmap, John, Nikto, Gobuster & More"
               echo "=========================================================="
               echo ""
               break
@@ -106,5 +67,4 @@ jobs:
             sleep 2
           done
 
-          # نمایش لاگ برای عیب‌یابی
           tail -f tunnel.log
